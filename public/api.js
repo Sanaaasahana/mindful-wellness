@@ -1,28 +1,28 @@
-// API configuration
+// === API Configuration ===
 const API_BASE_URL = window.location.origin + "/api"
+const AUTH_TOKEN_KEY = "mindful_auth_token"
+const CURRENT_USER_KEY = "mindful_current_user"
 
-// Get auth token from localStorage
+// === Token Handling ===
 function getAuthToken() {
-  return localStorage.getItem("mindful_auth_token")
+  return localStorage.getItem(AUTH_TOKEN_KEY)
 }
 
-// Set auth token
 function setAuthToken(token) {
-  localStorage.setItem("mindful_auth_token", token)
+  localStorage.setItem(AUTH_TOKEN_KEY, token)
 }
 
-// Remove auth token
 function removeAuthToken() {
-  localStorage.removeItem("mindful_auth_token")
+  localStorage.removeItem(AUTH_TOKEN_KEY)
 }
 
-// API request helper
+// === Generic API Request Helper ===
 async function apiRequest(endpoint, options = {}) {
   const token = getAuthToken()
   const config = {
     headers: {
       "Content-Type": "application/json",
-      ...(token && { Authorization: `Bearer ${token}` }),
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
     },
     ...options,
   }
@@ -36,7 +36,7 @@ async function apiRequest(endpoint, options = {}) {
     const data = await response.json()
 
     if (!response.ok) {
-      throw new Error(data.error || "API request failed")
+      throw new Error(data.error || data.message || "API request failed")
     }
 
     return data
@@ -46,7 +46,7 @@ async function apiRequest(endpoint, options = {}) {
   }
 }
 
-// Auth API
+// === Auth API ===
 const authAPI = {
   async signup(userData) {
     const response = await apiRequest("/auth/signup", {
@@ -68,11 +68,11 @@ const authAPI = {
 
   logout() {
     removeAuthToken()
-    localStorage.removeItem("mindful_current_user")
+    localStorage.removeItem(CURRENT_USER_KEY)
   },
 }
 
-// Profile API
+// === Profile API ===
 const profileAPI = {
   async get() {
     return await apiRequest("/profile")
@@ -86,7 +86,7 @@ const profileAPI = {
   },
 }
 
-// Mood API
+// === Mood API ===
 const moodAPI = {
   async save(moodData) {
     return await apiRequest("/moods", {
@@ -100,7 +100,7 @@ const moodAPI = {
   },
 }
 
-// Gratitude API
+// === Gratitude API ===
 const gratitudeAPI = {
   async save(gratitudeData) {
     return await apiRequest("/gratitudes", {
@@ -114,7 +114,7 @@ const gratitudeAPI = {
   },
 }
 
-// Journal API
+// === Journal API ===
 const journalAPI = {
   async save(entryData) {
     return await apiRequest("/journal", {
@@ -139,14 +139,14 @@ const journalAPI = {
   },
 }
 
-// Users API
+// === Users API ===
 const usersAPI = {
   async getAll() {
     return await apiRequest("/users")
   },
 }
 
-// Friends API
+// === Friends API ===
 const friendsAPI = {
   async sendRequest(friendId) {
     return await apiRequest("/friends/request", {
@@ -160,14 +160,14 @@ const friendsAPI = {
   },
 }
 
-// Stats API
+// === Stats API ===
 const statsAPI = {
   async get() {
     return await apiRequest("/stats")
   },
 }
 
-// Export APIs
+// === Export APIs to Window for Global Access ===
 window.authAPI = authAPI
 window.profileAPI = profileAPI
 window.moodAPI = moodAPI
